@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_univents_2/dashboard.dart';
 import 'package:flutter_univents_2/forgot_password';
 import 'package:google_sign_in/google_sign_in.dart';
+
 
 class IndexScreen extends StatefulWidget {
   const IndexScreen({super.key});
@@ -21,10 +23,9 @@ class _IndexScreenState extends State<IndexScreen> {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-      if (googleUser == null) return; 
+      if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -32,6 +33,13 @@ class _IndexScreenState extends State<IndexScreen> {
       );
 
       await _auth.signInWithCredential(credential);
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Dashboard()),
+        );
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Signed in with Google!')),
@@ -44,7 +52,6 @@ class _IndexScreenState extends State<IndexScreen> {
   }
 
   Future<void> _signInWithFacebook() async {
-    // Placeholder for Facebook login logic
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Facebook login not implemented yet.')),
     );
@@ -56,6 +63,13 @@ class _IndexScreenState extends State<IndexScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Dashboard()),
+        );
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login successful!')),
@@ -177,8 +191,7 @@ class _IndexScreenState extends State<IndexScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      const ForgotPassword()),
+                                  builder: (context) => const ForgotPassword()),
                             );
                           },
                           child: const Text(
@@ -258,8 +271,7 @@ class _IndexScreenState extends State<IndexScreen> {
           prefixIcon: icon != null ? Icon(icon, color: Colors.grey) : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide:
-                const BorderSide(color: Color.fromARGB(255, 178, 176, 176)),
+            borderSide: const BorderSide(color: Color.fromARGB(255, 178, 176, 176)),
           ),
           labelStyle: const TextStyle(color: Colors.black),
           filled: true,
