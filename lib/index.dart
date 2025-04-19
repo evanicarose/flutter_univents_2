@@ -100,162 +100,162 @@ class _IndexScreenState extends State<IndexScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(color: Colors.white),
-        alignment: Alignment.center,
-        child: Padding(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
-          child: SizedBox(
-            height: 850,
-            width: 600,
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Column(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(50),
-                      child: Image.asset(
-                        "assets/images/logo.png",
-                        width: 90,
-                        height: 90,
-                        fit: BoxFit.cover,
-                      ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: Image.asset(
+                            "assets/images/logo.png",
+                            width: 90,
+                            height: 90,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                const Padding(
-                  padding: EdgeInsets.all(15.0),
-                  child: Text(
-                    "UniVents",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.all(20.0),
+                    const Padding(
+                      padding: EdgeInsets.all(15.0),
                       child: Text(
-                        "Sign In",
+                        "UniVents",
                         style: TextStyle(
                             color: Colors.black,
-                            fontSize: 25,
+                            fontSize: 30,
                             fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ],
-                ),
-                inputField(
-                  controller: _emailController,
-                  hint: "abc@email.com",
-                  icon: Icons.email_outlined,
-                ),
-                const SizedBox(height: 10),
-                inputField(
-                  controller: _passwordController,
-                  hint: "Password",
-                  isPassword: true,
-                  icon: Icons.lock_outline_rounded,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Switch.adaptive(
-                            value: _rememberMe,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _rememberMe = value;
-                              });
-                            },
-                            activeColor: const Color.fromARGB(255, 6, 83, 178),
-                            inactiveThumbColor:
-                                const Color.fromARGB(255, 255, 255, 255),
-                            inactiveTrackColor:
-                                const Color.fromARGB(255, 132, 127, 127),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: const [
+                        Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: Text(
+                            "Sign In",
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold),
                           ),
-                          const Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child: Text(
-                              "Remember me",
-                              style: TextStyle(color: Colors.black),
+                        ),
+                      ],
+                    ),
+                    inputField(
+                      controller: _emailController,
+                      hint: "abc@email.com",
+                      icon: Icons.email_outlined,
+                    ),
+                    const SizedBox(height: 10),
+                    inputField(
+                      controller: _passwordController,
+                      hint: "Password",
+                      isPassword: true,
+                      icon: Icons.lock_outline_rounded,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Switch.adaptive(
+                                value: _rememberMe,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    _rememberMe = value;
+                                  });
+                                },
+                                activeColor: const Color.fromARGB(255, 6, 83, 178),
+                                inactiveThumbColor:
+                                    const Color.fromARGB(255, 255, 255, 255),
+                                inactiveTrackColor:
+                                    const Color.fromARGB(255, 132, 127, 127),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.all(20.0),
+                                child: Text(
+                                  "Remember me",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const ForgotPassword()),
+                                );
+                              },
+                              child: const Text(
+                                "Forgot password?",
+                                style: TextStyle(color: Colors.black),
+                              ),
                             ),
                           ),
                         ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const ForgotPassword()),
-                            );
-                          },
-                          child: const Text(
-                            "Forgot password?",
-                            style: TextStyle(color: Colors.black),
+                    ),
+                    loginButton(),
+                    const Padding(
+                      padding: EdgeInsets.all(15.0),
+                      child: Text(
+                        "OR",
+                        style: TextStyle(
+                            color: Color.fromARGB(255, 148, 145, 145),
+                            fontSize: 18),
+                      ),
+                    ),
+                    socialLoginButton(
+                      'assets/images/google-logo.png',
+                      "Log in with Google",
+                      _signInWithGoogle,
+                    ),
+                    socialLoginButton(
+                      'assets/images/facebook-logo.png',
+                      "Log in with Facebook",
+                      _signInWithFacebook,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(30.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Padding(
+                            padding: EdgeInsets.all(2.0),
+                            child: Text(
+                              "Don't have an account?",
+                              style: TextStyle(color: Colors.black),
+                            ),
                           ),
-                        ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              "Sign up",
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 2, 74, 134)),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                loginButton(),
-                const Padding(
-                  padding: EdgeInsets.all(15.0),
-                  child: Text(
-                    "OR",
-                    style: TextStyle(
-                        color: Color.fromARGB(255, 148, 145, 145),
-                        fontSize: 18),
-                  ),
-                ),
-                socialLoginButton(
-                  'assets/images/google-logo.png',
-                  "Log in with Google",
-                  _signInWithGoogle,
-                ),
-                socialLoginButton(
-                  'assets/images/facebook-logo.png',
-                  "Log in with Facebook",
-                  _signInWithFacebook,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Padding(
-                        padding: EdgeInsets.all(2.0),
-                        child: Text(
-                          "Don't have an account?",
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Sign up",
-                          style: TextStyle(
-                              color: Color.fromARGB(255, 2, 74, 134)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
         ),
       ),
     );
