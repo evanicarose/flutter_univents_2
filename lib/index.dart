@@ -21,8 +21,14 @@ class _IndexScreenState extends State<IndexScreen> {
 
   Future<void> _signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email'],
+        forceCodeForRefreshToken: true,
+      );
 
+      await googleSignIn.signOut();
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) return;
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
@@ -50,6 +56,7 @@ class _IndexScreenState extends State<IndexScreen> {
       );
     }
   }
+
 
   Future<void> _signInWithFacebook() async {
     ScaffoldMessenger.of(context).showSnackBar(
