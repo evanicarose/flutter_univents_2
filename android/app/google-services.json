@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "524171464130",
+    "project_id": "cse1-teamf2",
+    "storage_bucket": "cse1-teamf2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524171464130:android:c2a4881fa653984a099a5b",
+        "android_client_info": {
+          "package_name": "com.example.flutter_univents_2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "524171464130-au9s7a0bulg56g09i4k8dvs1d4ruoegf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0IugiwWnXBzoquRL5IMqq717jA9-ar6E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "524171464130-au9s7a0bulg56g09i4k8dvs1d4ruoegf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "524171464130-mqnrki9lm61e5dfcro8mr138rrugrtma.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterUnivents"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
