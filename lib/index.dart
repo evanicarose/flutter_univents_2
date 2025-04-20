@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_univents_2/code_verification.dart';
 import 'package:flutter_univents_2/dashboard.dart';
 import 'package:flutter_univents_2/forgot_password';
 import 'package:google_sign_in/google_sign_in.dart';
-
+import 'package:email_otp/email_otp.dart';
 
 class IndexScreen extends StatefulWidget {
   const IndexScreen({super.key});
@@ -31,7 +32,8 @@ class _IndexScreenState extends State<IndexScreen> {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -57,11 +59,31 @@ class _IndexScreenState extends State<IndexScreen> {
     }
   }
 
-
   Future<void> _signInWithFacebook() async {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Facebook login not implemented yet.')),
     );
+  }
+
+  EmailOTP myAuth = EmailOTP();
+
+  void configureOTP(String userEmail) {
+    myAuth.setConfig(
+      appEmail: _emailController.text,
+      appName: "Isko Lab",
+      userEmail: userEmail,
+      otpLength: 4,
+      otpType: OTPType.digitsOnly,
+    );
+  }
+
+  Future<void> sendOTP() async {
+    bool result = await myAuth.sendOTP();
+    if (result) {
+      print("OTP sent successfully");
+    } else {
+      print("Failed to send OTP");
+    }
   }
 
   void _signIn() async {
@@ -71,16 +93,30 @@ class _IndexScreenState extends State<IndexScreen> {
         password: _passwordController.text,
       );
 
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Dashboard()),
+      configureOTP(_emailController.text.trim());
+
+      bool otpSent = await myAuth.sendOTP();
+      if (otpSent) {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => CodeVerification(
+                      email: _emailController.text.trim(),
+                      myAuth: myAuth,
+                    )), // Your OTP screen
+          );
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('OTP sent to your email.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Failed to send OTP. Please try again.')),
         );
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login successful!')),
-      );
     } on FirebaseAuthException catch (e) {
       String message = '';
       if (e.code == 'user-not-found') {
@@ -104,158 +140,160 @@ class _IndexScreenState extends State<IndexScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image.asset(
-                            "assets/images/logo.png",
-                            width: 90,
-                            height: 90,
-                            fit: BoxFit.cover,
-                          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: Image.asset(
+                          "assets/images/logo.png",
+                          width: 90,
+                          height: 90,
+                          fit: BoxFit.cover,
                         ),
-                      ],
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.all(15.0),
-                      child: Text(
-                        "UniVents",
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold),
                       ),
+                    ],
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.all(15.0),
+                    child: Text(
+                      "UniVents",
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: const [
-                        Padding(
-                          padding: EdgeInsets.all(20.0),
-                          child: Text(
-                            "Sign In",
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold),
-                          ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: const [
+                      Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Text(
+                          "Sign In",
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold),
                         ),
-                      ],
-                    ),
-                    inputField(
-                      controller: _emailController,
-                      hint: "abc@email.com",
-                      icon: Icons.email_outlined,
-                    ),
-                    const SizedBox(height: 10),
-                    inputField(
-                      controller: _passwordController,
-                      hint: "Password",
-                      isPassword: true,
-                      icon: Icons.lock_outline_rounded,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Switch.adaptive(
-                                value: _rememberMe,
-                                onChanged: (bool value) {
-                                  setState(() {
-                                    _rememberMe = value;
-                                  });
-                                },
-                                activeColor: const Color.fromARGB(255, 6, 83, 178),
-                                inactiveThumbColor:
-                                    const Color.fromARGB(255, 255, 255, 255),
-                                inactiveTrackColor:
-                                    const Color.fromARGB(255, 132, 127, 127),
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.all(20.0),
-                                child: Text(
-                                  "Remember me",
-                                  style: TextStyle(color: Colors.black),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const ForgotPassword()),
-                                );
+                      ),
+                    ],
+                  ),
+                  inputField(
+                    controller: _emailController,
+                    hint: "abc@email.com",
+                    icon: Icons.email_outlined,
+                  ),
+                  const SizedBox(height: 10),
+                  inputField(
+                    controller: _passwordController,
+                    hint: "Password",
+                    isPassword: true,
+                    icon: Icons.lock_outline_rounded,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Switch.adaptive(
+                              value: _rememberMe,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _rememberMe = value;
+                                });
                               },
-                              child: const Text(
-                                "Forgot password?",
+                              activeColor:
+                                  const Color.fromARGB(255, 6, 83, 178),
+                              inactiveThumbColor:
+                                  const Color.fromARGB(255, 255, 255, 255),
+                              inactiveTrackColor:
+                                  const Color.fromARGB(255, 132, 127, 127),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: Text(
+                                "Remember me",
                                 style: TextStyle(color: Colors.black),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    loginButton(),
-                    const Padding(
-                      padding: EdgeInsets.all(15.0),
-                      child: Text(
-                        "OR",
-                        style: TextStyle(
-                            color: Color.fromARGB(255, 148, 145, 145),
-                            fontSize: 18),
-                      ),
-                    ),
-                    socialLoginButton(
-                      'assets/images/google-logo.png',
-                      "Log in with Google",
-                      _signInWithGoogle,
-                    ),
-                    socialLoginButton(
-                      'assets/images/facebook-logo.png',
-                      "Log in with Facebook",
-                      _signInWithFacebook,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(30.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Padding(
-                            padding: EdgeInsets.all(2.0),
-                            child: Text(
-                              "Don't have an account?",
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ForgotPassword()),
+                              );
+                            },
+                            child: const Text(
+                              "Forgot password?",
                               style: TextStyle(color: Colors.black),
                             ),
                           ),
-                          Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              "Sign up",
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 2, 74, 134)),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  loginButton(),
+                  const Padding(
+                    padding: EdgeInsets.all(15.0),
+                    child: Text(
+                      "OR",
+                      style: TextStyle(
+                          color: Color.fromARGB(255, 148, 145, 145),
+                          fontSize: 18),
+                    ),
+                  ),
+                  socialLoginButton(
+                    'assets/images/google-logo.png',
+                    "Log in with Google",
+                    _signInWithGoogle,
+                  ),
+                  socialLoginButton(
+                    'assets/images/facebook-logo.png',
+                    "Log in with Facebook",
+                    _signInWithFacebook,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Padding(
+                          padding: EdgeInsets.all(2.0),
+                          child: Text(
+                            "Don't have an account?",
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Sign up",
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 2, 74, 134)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
         ),
       ),
     );
@@ -278,7 +316,8 @@ class _IndexScreenState extends State<IndexScreen> {
           prefixIcon: icon != null ? Icon(icon, color: Colors.grey) : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color.fromARGB(255, 178, 176, 176)),
+            borderSide:
+                const BorderSide(color: Color.fromARGB(255, 178, 176, 176)),
           ),
           labelStyle: const TextStyle(color: Colors.black),
           filled: true,
@@ -340,7 +379,8 @@ class _IndexScreenState extends State<IndexScreen> {
     );
   }
 
-  Widget socialLoginButton(String assetPath, String text, VoidCallback onPressed) {
+  Widget socialLoginButton(
+      String assetPath, String text, VoidCallback onPressed) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
