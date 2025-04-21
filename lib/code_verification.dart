@@ -28,6 +28,12 @@ class _CodeVerificationState extends State<CodeVerification> {
     startTimer();
   }
 
+  @override
+  void dispose() {
+    timer?.cancel(); // Cancel the timer to avoid calling setState after dispose
+    super.dispose();
+  }
+
   void startTimer() {
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (start == 0) {
