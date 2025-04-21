@@ -24,10 +24,10 @@ class _IndexScreenState extends State<IndexScreen> {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email'],
-        forceCodeForRefreshToken: true,
+        forceCodeForRefreshToken: true, //ensures refresh token, means magpakita ang add another account
       );
 
-      await googleSignIn.signOut();
+      await googleSignIn.signOut(); //ensures log out para pwede new account napod maka log-in
 
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) return;
@@ -35,13 +35,15 @@ class _IndexScreenState extends State<IndexScreen> {
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
+      // allows for creating a firebase credential using google tokens
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+        idToken: googleAuth.idToken, 
       );
 
       await _auth.signInWithCredential(credential);
 
+      //if the widget still in the tree or active pa sya, it will proceed to the dashboard
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -70,7 +72,7 @@ class _IndexScreenState extends State<IndexScreen> {
   void configureOTP(String userEmail) {
     myAuth.setConfig(
       appEmail: _emailController.text,
-      appName: "Isko Lab",
+      appName: "UniVents",
       userEmail: userEmail,
       otpLength: 4,
       otpType: OTPType.digitsOnly,
