@@ -30,7 +30,7 @@ class _CodeVerificationState extends State<CodeVerification> {
 
   @override
   void dispose() {
-    timer?.cancel(); // Cancel the timer to avoid calling setState after dispose
+    timer?.cancel(); 
     super.dispose();
   }
 
