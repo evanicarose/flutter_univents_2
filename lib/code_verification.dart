@@ -37,7 +37,7 @@ class _CodeVerificationState extends State<CodeVerification> {
   void startTimer() {
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (start == 0) {
-        timer?.cancel();
+        timer.cancel();
       } else {
         setState(() {
           start--;

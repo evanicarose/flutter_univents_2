@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_univents_2/code_verification.dart';
 import 'package:flutter_univents_2/dashboard.dart';
 import 'package:flutter_univents_2/forgot_password';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:email_otp/email_otp.dart';
 
 class IndexScreen extends StatefulWidget {
   const IndexScreen({super.key});
@@ -24,26 +22,23 @@ class _IndexScreenState extends State<IndexScreen> {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email'],
-        forceCodeForRefreshToken: true, //ensures refresh token, means magpakita ang add another account
+        forceCodeForRefreshToken: true,
       );
 
-      await googleSignIn.signOut(); //ensures log out para pwede new account napod maka log-in
-
+      await googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) return;
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      // allows for creating a firebase credential using google tokens
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken, 
+        idToken: googleAuth.idToken,
       );
 
       await _auth.signInWithCredential(credential);
 
-      //if the widget still in the tree or active pa sya, it will proceed to the dashboard
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -67,58 +62,23 @@ class _IndexScreenState extends State<IndexScreen> {
     );
   }
 
-  EmailOTP myAuth = EmailOTP();
-
-  void configureOTP(String userEmail) {
-    myAuth.setConfig(
-      appEmail: _emailController.text,
-      appName: "UniVents",
-      userEmail: userEmail,
-      otpLength: 4,
-      otpType: OTPType.digitsOnly,
-    );
-  }
-
-  Future<void> sendOTP() async {
-    bool result = await myAuth.sendOTP();
-    if (result) {
-      print("OTP sent successfully");
-    } else {
-      print("Failed to send OTP");
-    }
-  }
-
   void _signIn() async {
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
-      configureOTP(_emailController.text.trim());
-
-      bool otpSent = await myAuth.sendOTP();
-      if (otpSent) {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => CodeVerification(
-                      email: _emailController.text.trim(),
-                      myAuth: myAuth,
-                    )), // Your OTP screen
-          );
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('OTP sent to your email.')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Failed to send OTP. Please try again.')),
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Dashboard()),
         );
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login successful!')),
+      );
     } on FirebaseAuthException catch (e) {
       String message = '';
       if (e.code == 'user-not-found') {
