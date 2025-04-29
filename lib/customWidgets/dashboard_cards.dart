@@ -7,7 +7,9 @@ class DashboardCard extends StatelessWidget {
   final String title;
   final String banner;
   final DateTime dateTimeStart;
+  final DateTime dateTimeEnd;
   final String location;
+  final String description;
 
   const DashboardCard({
     super.key,
@@ -15,26 +17,37 @@ class DashboardCard extends StatelessWidget {
     required this.banner,
     required this.dateTimeStart,
     required this.location,
+    required this.dateTimeEnd,
+    required this.description,
   });
 
   factory DashboardCard.fromMap(Map<String, dynamic> map) {
-    final Timestamp timestamp = map['datetimestart']; //Convert to dateTime
-    final DateTime dateTime = timestamp.toDate();
+    final Timestamp timestampStart = map['datetimestart']; //Convert to dateTime
+    final Timestamp timestampEnd = map['datetimeend']; //Convert to dateTime
+    final DateTime dateTimeStart = timestampStart.toDate();
+    final DateTime dateTimeEnd = timestampEnd.toDate();
     final String location = map['location'] ?? "";
     final String title = map['title'];
 
     return DashboardCard(
-        title: title,
-        banner: map['banner'] ?? '',
-        dateTimeStart: dateTime,
-        location: location);
+      title: title,
+      banner: map['banner'] ?? '',
+      dateTimeStart: dateTimeStart,
+      dateTimeEnd: dateTimeEnd,
+      location: location,
+      description: map['description'] ?? '',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     String month = DateFormat('MMM').format(dateTimeStart);
     String day = DateFormat('dd').format(dateTimeStart);
-    String fullDateTime = DateFormat('dd/MMM/yyyy').format(dateTimeStart);
+    String fullDateTimeStart =
+        DateFormat('dd MMMM, yyyy').format(dateTimeStart);
+    String dayAndTime = DateFormat("EEEE, h:mm a").format(dateTimeStart);
+    String endTime = DateFormat('h:mm a').format(dateTimeEnd);
+
     int maxCharsTitle = 18;
     int maxCharsLocation = 20;
 
@@ -56,11 +69,13 @@ class DashboardCard extends StatelessWidget {
               context,
               MaterialPageRoute(
                   builder: (context) => ViewEvents(
-                        title: title,
-                        banner: banner,
-                        dateTimeStart: fullDateTime,
-                        location: location,
-                      )),
+                      title: title,
+                      banner: banner,
+                      dateTimeStart: fullDateTimeStart,
+                      dateTimeEnd: endTime,
+                      location: location,
+                      dayAndTime: dayAndTime,
+                      description: description)),
             );
           },
           child: Card(
