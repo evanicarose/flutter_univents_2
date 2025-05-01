@@ -23,6 +23,7 @@ class AllEventsPage extends StatelessWidget {
         'type': data['type'] ?? '',
         'uid': data['uid'] ?? '',
         'orguid': data['orguid'],  // Added org reference here
+        'eventId': data['uid'],  // Add eventId here
       };
     }).toList();
   }
@@ -82,7 +83,8 @@ class AllEventsPage extends StatelessWidget {
                                   location: event['location'],
                                   dayAndTime: dayAndTime,
                                   description: event['description'],
-                                  orgRef: event['orguid'])), // Pass orgRef here
+                                  orgRef: event['orguid'],
+                                  eventId: event['eventId'])), // Pass eventId here
                         );
                       },
                       child: Card(

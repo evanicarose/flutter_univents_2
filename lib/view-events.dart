@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class ViewEvents extends StatelessWidget {
+class ViewEvents extends StatefulWidget {
   final String title;
   final String banner;
   final String dateTimeStart;
@@ -11,6 +12,7 @@ class ViewEvents extends StatelessWidget {
   final String dayAndTime;
   final String description;
   final DocumentReference orgRef;
+  final String eventId;
 
   const ViewEvents({
     super.key,
@@ -22,7 +24,78 @@ class ViewEvents extends StatelessWidget {
     required this.dayAndTime,
     required this.description,
     required this.orgRef,
+    required this.eventId,
   });
+
+  @override
+  _ViewEventsState createState() => _ViewEventsState();
+}
+
+class _ViewEventsState extends State<ViewEvents> {
+  bool isJoined = false;
+  Timestamp? joinTimestamp;
+
+  @override
+  void initState() {
+    super.initState();
+    checkIfStudentJoined();
+  }
+
+  Future<void> checkIfStudentJoined() async {
+    final studentId = FirebaseAuth.instance.currentUser?.uid;
+    if (studentId == null) return;
+
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('attendees')
+        .where('accountid', isEqualTo: FirebaseFirestore.instance.collection('accounts').doc(studentId))
+        .where('eventid', isEqualTo: FirebaseFirestore.instance.collection('events').doc(widget.eventId))
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      setState(() {
+        isJoined = true;
+        joinTimestamp = querySnapshot.docs.first['datetimestamp'];
+      });
+    }
+  }
+
+  Future<void> toggleJoinStatus() async {
+    final studentId = FirebaseAuth.instance.currentUser?.uid;
+    if (studentId == null) return;
+
+    final eventRef = FirebaseFirestore.instance.collection('events').doc(widget.eventId);
+    final studentRef = FirebaseFirestore.instance.collection('attendees');
+
+    if (isJoined) {
+      // If "Joined" is clicked, remove the student from the event
+      final querySnapshot = await studentRef
+          .where('eventid', isEqualTo: eventRef)
+          .where('accountid', isEqualTo: FirebaseFirestore.instance.collection('accounts').doc(studentId))
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      setState(() {
+        isJoined = false;
+        joinTimestamp = null;
+      });
+    } else {
+      // If "Join" is clicked, add the student to the event
+      await studentRef.add({
+        'eventid': eventRef,
+        'accountid': FirebaseFirestore.instance.collection('accounts').doc(studentId),
+        'status': 'pending',
+        'datetimestamp': FieldValue.serverTimestamp(),
+      });
+
+      setState(() {
+        isJoined = true;
+        joinTimestamp = Timestamp.now();
+      });
+    }
+  }
 
   Future<Map<String, dynamic>?> fetchOrganizationFromReference(DocumentReference orgRef) async {
     final docSnapshot = await orgRef.get();
@@ -38,7 +111,7 @@ class ViewEvents extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: FutureBuilder<Map<String, dynamic>?>(
-        future: fetchOrganizationFromReference(orgRef),
+        future: fetchOrganizationFromReference(widget.orgRef),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -51,134 +124,53 @@ class ViewEvents extends StatelessWidget {
             final orgName = organization['name'] ?? 'No name';
             final orgLogo = organization['logo'] ?? '';
 
-return SingleChildScrollView(
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      // Stack containing the event banner image and the Interested section
-      Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Image.network(
-            banner,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: 250,
-          ),
-
-          AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            iconTheme: IconThemeData(color: Colors.white),
-            title: Text(
-              'Event Details',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24),
-            ),
-          ),
-          // Positioned row with profile images and "Interested" text
-          Positioned(
-            top: 220,
-            left: 45,
-            right: 45,
-            child: Container(
-              height: 60,
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(40),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 80, 
-                    child: Stack(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: CircleAvatar(
-                            radius: 18,
-                            backgroundImage: AssetImage('assets/images/charlotte.jpeg'),
-                          ),
-                        ),
-                        Positioned(
-                          left: 20,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Image.network(
+                        widget.banner,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 250,
+                      ),
+                      AppBar(
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        iconTheme: IconThemeData(color: Colors.white),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Title of the page
+                            Text(
+                              'Event Details',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24),
                             ),
-                            child: CircleAvatar(
-                              radius: 18,
-                              backgroundImage: AssetImage('assets/images/mulan.jpeg'),
+                            // Positioned Bookmark Icon
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.all(Radius.circular(5)),
+                                color: Colors.white.withOpacity(.30), // White background with opacity
+                              ),
+                              padding: EdgeInsets.all(6),
+                              child: Icon(
+                                Icons.bookmark, // The red icon
+                                color: Colors.white, // Red color for the icon
+                                size: 20, // Icon size, adjust as needed
+                              ),
                             ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 40,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: CircleAvatar(
-                              radius: 18,
-                              backgroundImage: AssetImage('assets/images/anna.jpeg'),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(width: 20),
-                  Text(
-                    '+20 Interested',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF2F3791),
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                 
-                  Container(
-                    width: 90,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Invite logic
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Color(0xFF2F3791),
-                        
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          ],
                         ),
                       ),
-                      child: Text('Invite'),
-                    ),
+
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-
-
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24),
                     child: Column(
@@ -186,14 +178,10 @@ return SingleChildScrollView(
                       children: [
                         SizedBox(height: 24),
                         Text(
-                          title,
+                          widget.title,
                           style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 24),
-                        // Organization Info
-                        
-                        SizedBox(height: 24),
-                        // Event Date and Time
                         Row(
                           children: [
                             Container(
@@ -208,14 +196,13 @@ return SingleChildScrollView(
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(dateTimeStart, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                Text('$dayAndTime - $dateTimeEnd', style: TextStyle(color: Color.fromARGB(255, 133, 133, 133))),
+                                Text(widget.dateTimeStart, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                Text('${widget.dayAndTime} - ${widget.dateTimeEnd}', style: TextStyle(color: Color.fromARGB(255, 133, 133, 133))),
                               ],
                             )
                           ],
                         ),
                         SizedBox(height: 24),
-                        // Event Location
                         Row(
                           children: [
                             Container(
@@ -233,12 +220,11 @@ return SingleChildScrollView(
                                 children: [
                                   Text('Ateneo de Davao University', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                   Text(
-                                    location, // Location text
+                                    widget.location,
                                     style: TextStyle(color: Color.fromARGB(255, 133, 133, 133)),
-                                    overflow: TextOverflow.ellipsis,  // Cuts off text and adds "..."
-                                    maxLines: 1,  // Limit the text to a single line
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-
                                 ],
                               ),
                             )
@@ -248,13 +234,12 @@ return SingleChildScrollView(
                         Row(
                           children: [
                             Container(
-                              width: 50,  
-                              height: 50,  
+                              width: 50,
+                              height: 50,
                               decoration: BoxDecoration(
-                                // shape: BoxShape.circle,
                                 borderRadius: BorderRadius.all(Radius.circular(10)),
                                 image: DecorationImage(
-                                  image: NetworkImage(orgLogo),  // Replace orgLogo with the URL of the logo
+                                  image: NetworkImage(orgLogo),
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -277,26 +262,23 @@ return SingleChildScrollView(
                             ),
                             SizedBox(width: 8),
                             ElevatedButton(
-                              onPressed: () {
-                                
-                              },
+                              onPressed: () {},
                               style: ElevatedButton.styleFrom(
-                                foregroundColor: const Color.fromARGB(255, 46, 96, 161), backgroundColor:Color.fromARGB(255, 160, 212, 255), 
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),  // Padding around the button
+                                foregroundColor: const Color.fromARGB(255, 46, 96, 161),
+                                backgroundColor: Color.fromARGB(255, 160, 212, 255),
+                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),  // Rounded corners
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                               child: Text("Follow", style: TextStyle(fontSize: 14)),
                             ),
                           ],
                         ),
-
                         SizedBox(height: 24),
-                        // Event Description
                         Text('About Event', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
                         SizedBox(height: 8),
-                        Text(description, style: TextStyle(fontSize: 16)),
+                        Text(widget.description, style: TextStyle(fontSize: 16)),
                         SizedBox(height: 24),
                       ],
                     ),
@@ -306,6 +288,58 @@ return SingleChildScrollView(
             );
           }
         },
+      ),
+      bottomNavigationBar: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Container(
+              width: 250,
+              height: 60,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2F3791),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                onPressed: toggleJoinStatus,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Center(
+                      child: Text(
+                        isJoined ? "JOINED" : "JOIN",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF4D5DFB),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: const Icon(
+                          Icons.arrow_forward,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

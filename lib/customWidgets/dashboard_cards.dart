@@ -11,6 +11,7 @@ class DashboardCard extends StatelessWidget {
   final String location;
   final String description;
   final DocumentReference orgRef;  // Add orgRef to constructor
+  final String eventId; // Add eventId to constructor
 
   const DashboardCard({
     super.key,
@@ -20,7 +21,8 @@ class DashboardCard extends StatelessWidget {
     required this.location,
     required this.dateTimeEnd,
     required this.description,
-    required this.orgRef,  // Accept orgRef as a parameter
+    required this.orgRef,
+    required this.eventId, // Accept eventId as a parameter
   });
 
   factory DashboardCard.fromMap(Map<String, dynamic> map) {
@@ -31,8 +33,9 @@ class DashboardCard extends StatelessWidget {
     final String location = map['location'] ?? "";
     final String title = map['title'];
     
-    // Extract orgRef from the map
+    // Extract orgRef and eventId from the map
     final DocumentReference orgRef = map['orguid'];  // Assuming 'orguid' is the reference to the organization
+    final String eventId = map['uid']; // Assuming 'uid' is the eventId
 
     return DashboardCard(
       title: title,
@@ -42,6 +45,7 @@ class DashboardCard extends StatelessWidget {
       location: location,
       description: map['description'] ?? '',
       orgRef: orgRef,  // Pass orgRef here
+      eventId: eventId, // Pass eventId here
     );
   }
 
@@ -82,7 +86,8 @@ class DashboardCard extends StatelessWidget {
                   location: location,
                   dayAndTime: dayAndTime,
                   description: description,
-                  orgRef: orgRef,  
+                  orgRef: orgRef,
+                  eventId: eventId, // Pass eventId here
                 ),
               ),
             );
@@ -91,72 +96,92 @@ class DashboardCard extends StatelessWidget {
             elevation: 0,
             color: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Stack(
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        margin: EdgeInsets.only(bottom: 8),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            banner,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: 140,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Opacity(
-                          opacity: .85,
-                          child: Card(
-                            elevation: 0,
-                            color: Colors.white,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    day,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                                  ),
-                                  Text(
-                                    month,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                                  ),
-                                ],
+                      Stack(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(bottom: 8),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                banner,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: 140,
                               ),
                             ),
                           ),
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Opacity(
+                              opacity: .85,
+                              child: Card(
+                                elevation: 0,
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        day,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                                      ),
+                                      Text(
+                                        month,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  Text(
-                    partialTitle,
-                    textAlign: TextAlign.start,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on_rounded, color: Colors.grey),
-                      SizedBox(width: 4),
                       Text(
-                        partialLocation,
+                        partialTitle,
                         textAlign: TextAlign.start,
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                      ),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_rounded, color: Colors.grey),
+                          SizedBox(width: 4),
+                          Text(
+                            partialLocation,
+                            textAlign: TextAlign.start,
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                Positioned(
+                  top: 20, // Adjust top position as needed
+                  right: 20, // Adjust right position as needed
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      color: Colors.white.withOpacity(0.85), // White background with opacity
+                    ),
+                    padding: EdgeInsets.all(6),
+                    child: Icon(
+                      Icons.bookmark, // The red icon you mentioned
+                      color: const Color.fromARGB(255, 238, 105, 96), // Red color for the icon
+                      size: 20, // Icon size, adjust as needed
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ));
