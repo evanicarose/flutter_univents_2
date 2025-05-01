@@ -1,4 +1,3 @@
-// ignore: file_names
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -21,7 +20,6 @@ class ViewEvents extends StatelessWidget {
     required this.dateTimeStart,
     required this.location,
     required this.dayAndTime,
-    required this.dateTimeEnd,
     required this.description,
     // required this.orguid,
   });
@@ -38,11 +36,6 @@ class ViewEvents extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int maxCharsLocation = 20;
-    String partialLocation = location.length > maxCharsLocation
-        ? '${location.substring(0, maxCharsLocation)}...'
-        : location;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
