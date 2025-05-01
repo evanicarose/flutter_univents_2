@@ -7,8 +7,7 @@ class AllEventsPage extends StatelessWidget {
   const AllEventsPage({super.key});
 
   Future<List<Map<String, dynamic>>> fetchAllEvents() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('events').get();
+    final snapshot = await FirebaseFirestore.instance.collection('events').get();
 
     return snapshot.docs.map((doc) {
       final data = doc.data();
@@ -23,6 +22,7 @@ class AllEventsPage extends StatelessWidget {
         'tags': data['tags'] ?? '',
         'type': data['type'] ?? '',
         'uid': data['uid'] ?? '',
+        'orguid': data['orguid'],  // Added org reference here
       };
     }).toList();
   }
@@ -81,7 +81,8 @@ class AllEventsPage extends StatelessWidget {
                                   dateTimeEnd: endTime,
                                   location: event['location'],
                                   dayAndTime: dayAndTime,
-                                  description: event['description'])),
+                                  description: event['description'],
+                                  orgRef: event['orguid'])), // Pass orgRef here
                         );
                       },
                       child: Card(
