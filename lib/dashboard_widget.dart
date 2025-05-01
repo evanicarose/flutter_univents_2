@@ -51,22 +51,25 @@ Widget drawerHeader() {
   );
 }
 
-Widget drawerListTile(String title, String imagePath, VoidCallback onTap) {
+Widget drawerListTile(String title, String? imagePath, VoidCallback onTap) {
   return ListTile(
     title: Text(title),
-    leading: Container(
-      width: 20,
-      height: 20,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage(imagePath),
-          fit: BoxFit.cover,
-        ),
-      ),
-    ),
+    leading: imagePath != null && imagePath.isNotEmpty
+        ? Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(imagePath),
+                fit: BoxFit.cover,
+              ),
+            ),
+          )
+        : null, 
     onTap: onTap,
   );
 }
+
 
 Widget messageTile(String name, String imagePath, bool isOnline, {String? subtitle, String? messageCount}) {
   return Padding(

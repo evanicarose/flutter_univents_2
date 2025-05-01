@@ -16,7 +16,6 @@ class _IndexScreenState extends State<IndexScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final _formKey = GlobalKey<FormState>();
 
   Future<void> _signInWithGoogle() async {
     try {

@@ -1,14 +1,21 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_univents_2/customWidgets/dashboard_cards.dart';
-
 import 'package:flutter_univents_2/dashboard_widget.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_univents_2/index.dart';
+import 'package:flutter_univents_2/all_events_page.dart';
 
-class Dashboard extends StatelessWidget {
+class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
+
+  @override
+  _DashboardState createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  int _currentIndex = 0; // Track the selected index for the BottomNavigationBar
 
   Future<List<DashboardCard>> fetchDashboardCards() async {
     final snapshot = await FirebaseFirestore.instance.collection('events').get();
@@ -68,13 +75,16 @@ class Dashboard extends StatelessWidget {
                 collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 childrenPadding: const EdgeInsets.only(left: 32),
                 children: [
-                  drawerListTile('Events', 'assets/images/calendar.png', () {
+                  drawerListTile('Events', '', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AllEventsPage()),
+                    );
+                  }),
+                  drawerListTile('Map', '', () {
                     Navigator.pop(context);
                   }),
-                  drawerListTile('Map', 'assets/images/location-pin.png', () {
-                    Navigator.pop(context);
-                  }),
-                  drawerListTile('Profile', 'assets/images/profile-user.png', () {
+                  drawerListTile('Profile', '', () {
                     Navigator.pop(context);
                   }),
                 ],
@@ -186,17 +196,17 @@ class Dashboard extends StatelessWidget {
             children: [
               Container(
                 width: double.infinity,
-                height: 30,
+                height: 20,
                 decoration: const BoxDecoration(
                   color: Color.fromARGB(255, 15, 62, 163),
                   borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(50),
-                    bottomRight: Radius.circular(50),
+                    bottomLeft: Radius.circular(100),
+                    bottomRight: Radius.circular(100),
                   ),
                 ),
               ),
               Positioned(
-                top: 10,
+                top: 5,
                 left: 0,
                 right: 0,
                 child: Row(
@@ -253,7 +263,23 @@ class Dashboard extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color.fromARGB(255, 15, 62, 163),
         unselectedItemColor: Colors.grey,
-        currentIndex: 0,
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index; 
+          });
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AllEventsPage()),
+            );
+          } if (index == 2){
+              Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AllEventsPage()),
+            );
+          }
+        },
         items: [
           const BottomNavigationBarItem(
             icon: Icon(Icons.explore),
@@ -267,11 +293,11 @@ class Dashboard extends StatelessWidget {
             icon: Material(
               shape: const CircleBorder(),
               child: Transform.translate(
-                offset: const Offset(0, -30),
+                offset: Offset(0, -30),
                 child: Container(
                   height: 50,
                   width: 50,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Color.fromARGB(255, 15, 62, 163),
                     shape: BoxShape.circle,
                   ),
@@ -279,11 +305,11 @@ class Dashboard extends StatelessWidget {
                     child: Container(
                       height: 20,
                       width: 20,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.all(Radius.circular(2.0)),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.add,
                         color: Color.fromARGB(255, 15, 62, 163),
                         size: 20,

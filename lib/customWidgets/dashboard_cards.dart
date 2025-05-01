@@ -10,6 +10,7 @@ class DashboardCard extends StatelessWidget {
   final DateTime dateTimeEnd;
   final String location;
   final String description;
+  final DocumentReference orgRef;  // Add orgRef to constructor
 
   const DashboardCard({
     super.key,
@@ -19,15 +20,19 @@ class DashboardCard extends StatelessWidget {
     required this.location,
     required this.dateTimeEnd,
     required this.description,
+    required this.orgRef,  // Accept orgRef as a parameter
   });
 
   factory DashboardCard.fromMap(Map<String, dynamic> map) {
-    final Timestamp timestampStart = map['datetimestart']; //Convert to dateTime
-    final Timestamp timestampEnd = map['datetimeend']; //Convert to dateTime
+    final Timestamp timestampStart = map['datetimestart'];
+    final Timestamp timestampEnd = map['datetimeend'];
     final DateTime dateTimeStart = timestampStart.toDate();
     final DateTime dateTimeEnd = timestampEnd.toDate();
     final String location = map['location'] ?? "";
     final String title = map['title'];
+    
+    // Extract orgRef from the map
+    final DocumentReference orgRef = map['orguid'];  // Assuming 'orguid' is the reference to the organization
 
     return DashboardCard(
       title: title,
@@ -36,6 +41,7 @@ class DashboardCard extends StatelessWidget {
       dateTimeEnd: dateTimeEnd,
       location: location,
       description: map['description'] ?? '',
+      orgRef: orgRef,  // Pass orgRef here
     );
   }
 
@@ -68,21 +74,23 @@ class DashboardCard extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => ViewEvents(
-                      title: title,
-                      banner: banner,
-                      dateTimeStart: fullDateTimeStart,
-                      dateTimeEnd: endTime,
-                      location: location,
-                      dayAndTime: dayAndTime,
-                      description: description)),
+                builder: (context) => ViewEvents(
+                  title: title,
+                  banner: banner,
+                  dateTimeStart: fullDateTimeStart,
+                  dateTimeEnd: endTime,
+                  location: location,
+                  dayAndTime: dayAndTime,
+                  description: description,
+                  orgRef: orgRef,  
+                ),
+              ),
             );
           },
           child: Card(
             elevation: 0,
             color: Colors.white,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
@@ -110,30 +118,25 @@ class DashboardCard extends StatelessWidget {
                             elevation: 0,
                             color: Colors.white,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 12),
+                              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
                               child: Column(
                                 children: [
                                   Text(
                                     day,
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700),
+                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                                   ),
                                   Text(
                                     month,
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600),
+                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
                             ),
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                   Text(
@@ -143,18 +146,13 @@ class DashboardCard extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      Icon(
-                        Icons.location_on_rounded,
-                        color: Colors.grey,
-                      ),
-                      SizedBox(
-                        width: 4,
-                      ),
+                      Icon(Icons.location_on_rounded, color: Colors.grey),
+                      SizedBox(width: 4),
                       Text(
                         partialLocation,
                         textAlign: TextAlign.start,
                         style: TextStyle(color: Colors.grey),
-                      )
+                      ),
                     ],
                   ),
                 ],
