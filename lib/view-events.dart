@@ -47,8 +47,14 @@ class _ViewEventsState extends State<ViewEvents> {
 
     final querySnapshot = await FirebaseFirestore.instance
         .collection('attendees')
-        .where('accountid', isEqualTo: FirebaseFirestore.instance.collection('accounts').doc(studentId))
-        .where('eventid', isEqualTo: FirebaseFirestore.instance.collection('events').doc(widget.eventId))
+        .where('accountid',
+            isEqualTo: FirebaseFirestore.instance
+                .collection('accounts')
+                .doc(studentId))
+        .where('eventid',
+            isEqualTo: FirebaseFirestore.instance
+                .collection('events')
+                .doc(widget.eventId))
         .get();
 
     if (querySnapshot.docs.isNotEmpty) {
@@ -63,14 +69,18 @@ class _ViewEventsState extends State<ViewEvents> {
     final studentId = FirebaseAuth.instance.currentUser?.uid;
     if (studentId == null) return;
 
-    final eventRef = FirebaseFirestore.instance.collection('events').doc(widget.eventId);
+    final eventRef =
+        FirebaseFirestore.instance.collection('events').doc(widget.eventId);
     final studentRef = FirebaseFirestore.instance.collection('attendees');
 
     if (isJoined) {
       // If "Joined" is clicked, remove the student from the event
       final querySnapshot = await studentRef
           .where('eventid', isEqualTo: eventRef)
-          .where('accountid', isEqualTo: FirebaseFirestore.instance.collection('accounts').doc(studentId))
+          .where('accountid',
+              isEqualTo: FirebaseFirestore.instance
+                  .collection('accounts')
+                  .doc(studentId))
           .get();
 
       for (var doc in querySnapshot.docs) {
@@ -85,7 +95,8 @@ class _ViewEventsState extends State<ViewEvents> {
       // If "Join" is clicked, add the student to the event
       await studentRef.add({
         'eventid': eventRef,
-        'accountid': FirebaseFirestore.instance.collection('accounts').doc(studentId),
+        'accountid':
+            FirebaseFirestore.instance.collection('accounts').doc(studentId),
         'status': 'pending',
         'datetimestamp': FieldValue.serverTimestamp(),
       });
@@ -97,7 +108,8 @@ class _ViewEventsState extends State<ViewEvents> {
     }
   }
 
-  Future<Map<String, dynamic>?> fetchOrganizationFromReference(DocumentReference orgRef) async {
+  Future<Map<String, dynamic>?> fetchOrganizationFromReference(
+      DocumentReference orgRef) async {
     final docSnapshot = await orgRef.get();
     if (docSnapshot.exists) {
       return docSnapshot.data() as Map<String, dynamic>;
@@ -155,8 +167,10 @@ class _ViewEventsState extends State<ViewEvents> {
                             // Positioned Bookmark Icon
                             Container(
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.all(Radius.circular(5)),
-                                color: Colors.white.withOpacity(.30), // White background with opacity
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5)),
+                                color: Colors.white.withOpacity(
+                                    .30), // White background with opacity
                               ),
                               padding: EdgeInsets.all(6),
                               child: Icon(
@@ -168,18 +182,19 @@ class _ViewEventsState extends State<ViewEvents> {
                           ],
                         ),
                       ),
-
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12.0, horizontal: 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: 24),
                         Text(
                           widget.title,
-                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 32, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 24),
                         Row(
@@ -190,14 +205,22 @@ class _ViewEventsState extends State<ViewEvents> {
                                 borderRadius: BorderRadius.circular(12),
                                 color: Color.fromARGB(255, 160, 212, 255),
                               ),
-                              child: Icon(Icons.calendar_month_rounded, color: Color.fromARGB(255, 0, 59, 107)),
+                              child: Icon(Icons.calendar_month_rounded,
+                                  color: Color.fromARGB(255, 0, 59, 107)),
                             ),
                             SizedBox(width: 10),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(widget.dateTimeStart, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                Text('${widget.dayAndTime} - ${widget.dateTimeEnd}', style: TextStyle(color: Color.fromARGB(255, 133, 133, 133))),
+                                Text(widget.dateTimeStart,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
+                                Text(
+                                    '${widget.dayAndTime} - ${widget.dateTimeEnd}',
+                                    style: TextStyle(
+                                        color: Color.fromARGB(
+                                            255, 133, 133, 133))),
                               ],
                             )
                           ],
@@ -211,17 +234,23 @@ class _ViewEventsState extends State<ViewEvents> {
                                 borderRadius: BorderRadius.circular(12),
                                 color: Color.fromARGB(255, 160, 212, 255),
                               ),
-                              child: Icon(Icons.location_on_rounded, color: Color.fromARGB(255, 0, 59, 107)),
+                              child: Icon(Icons.location_on_rounded,
+                                  color: Color.fromARGB(255, 0, 59, 107)),
                             ),
                             SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Ateneo de Davao University', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  Text('Ateneo de Davao University',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold)),
                                   Text(
                                     widget.location,
-                                    style: TextStyle(color: Color.fromARGB(255, 133, 133, 133)),
+                                    style: TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 133, 133, 133)),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                   ),
@@ -237,7 +266,8 @@ class _ViewEventsState extends State<ViewEvents> {
                               width: 50,
                               height: 50,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
                                 image: DecorationImage(
                                   image: NetworkImage(orgLogo),
                                   fit: BoxFit.cover,
@@ -251,11 +281,14 @@ class _ViewEventsState extends State<ViewEvents> {
                                 children: [
                                   Text(
                                     orgName,
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   Text(
                                     "Organizer",
-                                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
                               ),
@@ -264,21 +297,28 @@ class _ViewEventsState extends State<ViewEvents> {
                             ElevatedButton(
                               onPressed: () {},
                               style: ElevatedButton.styleFrom(
-                                foregroundColor: const Color.fromARGB(255, 46, 96, 161),
-                                backgroundColor: Color.fromARGB(255, 160, 212, 255),
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                foregroundColor:
+                                    const Color.fromARGB(255, 46, 96, 161),
+                                backgroundColor:
+                                    Color.fromARGB(255, 160, 212, 255),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: Text("Follow", style: TextStyle(fontSize: 14)),
+                              child: Text("Follow",
+                                  style: TextStyle(fontSize: 14)),
                             ),
                           ],
                         ),
                         SizedBox(height: 24),
-                        Text('About Event', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+                        Text('About Event',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w500)),
                         SizedBox(height: 8),
-                        Text(widget.description, style: TextStyle(fontSize: 16)),
+                        Text(widget.description,
+                            style: TextStyle(fontSize: 16)),
                         SizedBox(height: 24),
                       ],
                     ),
@@ -294,7 +334,7 @@ class _ViewEventsState extends State<ViewEvents> {
         children: [
           Padding(
             padding: EdgeInsets.all(20),
-            child: Container(
+            child: SizedBox(
               width: 250,
               height: 60,
               child: ElevatedButton(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_univents_2/all_events_page.dart';
@@ -65,13 +66,13 @@ Widget drawerListTile(String title, String? imagePath, VoidCallback onTap) {
               ),
             ),
           )
-        : null, 
+        : null,
     onTap: onTap,
   );
 }
 
-
-Widget messageTile(String name, String imagePath, bool isOnline, {String? subtitle, String? messageCount}) {
+Widget messageTile(String name, String imagePath, bool isOnline,
+    {String? subtitle, String? messageCount}) {
   return Padding(
     padding: const EdgeInsets.all(15.0),
     child: Row(
@@ -113,12 +114,14 @@ Widget messageTile(String name, String imagePath, bool isOnline, {String? subtit
               children: [
                 Text(
                   name,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 if (subtitle != null)
                   Text(
                     subtitle,
-                    style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w200),
+                    style: const TextStyle(
+                        fontSize: 8, fontWeight: FontWeight.w200),
                   ),
               ],
             ),
@@ -147,70 +150,92 @@ Widget messageTile(String name, String imagePath, bool isOnline, {String? subtit
   );
 }
 
-Widget searchBarWithFilter() {
-  return Row(
-    children: [
-      Expanded(
-        child: Container(
-          height: 35,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.search, color: Color.fromARGB(255, 214, 210, 210)),
-              SizedBox(width: 13),
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search...',
-                    hintStyle: TextStyle(
-                      color: Color.fromARGB(255, 82, 106, 160),
-                      fontSize: 20,
+class SearchBarWithFilter extends StatefulWidget {
+  final TextEditingController searchController;
+  final Function(String) onSearchChanged;
+
+  const SearchBarWithFilter({
+    Key? key,
+    required this.searchController,
+    required this.onSearchChanged,
+  }) : super(key: key);
+
+  @override
+  State<SearchBarWithFilter> createState() => _SearchBarWithFilterState();
+}
+
+class _SearchBarWithFilterState extends State<SearchBarWithFilter> {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 35,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.search,
+                    color: Color.fromARGB(255, 214, 210, 210)),
+                const SizedBox(width: 13),
+                Expanded(
+                  child: TextField(
+                    style: TextStyle(color: Colors.white),
+                    controller: widget.searchController,
+                    onChanged: widget
+                        .onSearchChanged, // Call the callback on input change
+                    decoration: const InputDecoration(
+                      hintText: 'Search...',
+                      hintStyle: TextStyle(
+                        color: Color.fromARGB(255, 82, 106, 160),
+                        fontSize: 20,
+                      ),
+                      border: InputBorder.none,
                     ),
-                    border: InputBorder.none,
                   ),
                 ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Container(
+          height: 40,
+          width: 90,
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 112, 114, 245),
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                height: 20,
+                width: 20,
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 195, 193, 193),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.filter_list,
+                  color: Color.fromARGB(255, 112, 114, 245),
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Filters',
+                style: TextStyle(color: Colors.white, fontSize: 12),
               ),
             ],
           ),
         ),
-      ),
-      const SizedBox(width: 12),
-      Container(
-        height: 40,
-        width: 90,
-        decoration: BoxDecoration(
-          color: Color.fromARGB(255, 112, 114, 245),
-          borderRadius: BorderRadius.circular(25),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              height: 20,
-              width: 20,
-              decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 195, 193, 193),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.filter_list,
-                color: Color.fromARGB(255, 112, 114, 245),
-                size: 16,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Filters',
-              style: TextStyle(color: Colors.white, fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 Widget categoryButton(String text, String imagePath, Color color) {
@@ -293,4 +318,3 @@ Widget upcomingEventsHeader(BuildContext context) {
     ),
   );
 }
-

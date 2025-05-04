@@ -15,11 +15,46 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  final TextEditingController _searchController = TextEditingController();
+  late Future<List<DashboardCard>> _dashboardCardsFuture;
+  List<DashboardCard> _allCards = [];
+  List<DashboardCard> _filteredCards = [];
+
+  @override
+  @override
+  void initState() {
+    super.initState();
+    _dashboardCardsFuture = fetchDashboardCards(); // Cache the Future
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredCards = _allCards
+          .where((card) => card.title.toLowerCase().contains(query))
+          .toList();
+    });
+  }
+
   int _currentIndex = 0; // Track the selected index for the BottomNavigationBar
 
   Future<List<DashboardCard>> fetchDashboardCards() async {
-    final snapshot = await FirebaseFirestore.instance.collection('events').get();
-    return snapshot.docs.map((doc) => DashboardCard.fromMap(doc.data())).toList();
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('events').get();
+      final cards = snapshot.docs
+          .map((doc) => DashboardCard.fromMap(doc.data()))
+          .toList();
+
+      _allCards = cards; // Update directly
+      _filteredCards = cards;
+
+      return cards;
+    } catch (e) {
+      print('Error: $e');
+      return [];
+    }
   }
 
   Future<void> _signOut(BuildContext context) async {
@@ -46,6 +81,8 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       drawer: Drawer(
         backgroundColor: Colors.white,
@@ -71,14 +108,17 @@ class _DashboardState extends State<Dashboard> {
                   ),
                 ),
                 title: const Text('Dashboard'),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                collapsedShape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 childrenPadding: const EdgeInsets.only(left: 32),
                 children: [
                   drawerListTile('Events', '', () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AllEventsPage()),
+                      MaterialPageRoute(
+                          builder: (context) => const AllEventsPage()),
                     );
                   }),
                   drawerListTile('Map', '', () {
@@ -93,10 +133,12 @@ class _DashboardState extends State<Dashboard> {
             drawerListTile('Your Events', 'assets/images/calendar.png', () {
               Navigator.pop(context);
             }),
-            drawerListTile('Notification', 'assets/images/notification-bell.png', () {
+            drawerListTile(
+                'Notification', 'assets/images/notification-bell.png', () {
               Navigator.pop(context);
             }),
-            drawerListTile('Sign Out', 'assets/images/log-out.png', () => _signOut(context)),
+            drawerListTile('Sign Out', 'assets/images/log-out.png',
+                () => _signOut(context)),
             const Divider(),
             const Padding(
               padding: EdgeInsets.all(15.0),
@@ -110,8 +152,10 @@ class _DashboardState extends State<Dashboard> {
             ),
             messageTile("Rapunzel (Wifey)", "assets/images/rapunzel.jpeg", true,
                 subtitle: "YOU HAVE A NEW MESSAGE", messageCount: "2"),
-            messageTile("Maximus (Horsey)", "assets/images/maximus.jpeg", false),
-            messageTile("Mother Gothel (Ex-Mom)", "assets/images/gothel.jpeg", true),
+            messageTile(
+                "Maximus (Horsey)", "assets/images/maximus.jpeg", false),
+            messageTile(
+                "Mother Gothel (Ex-Mom)", "assets/images/gothel.jpeg", true),
           ],
         ),
       ),
@@ -136,7 +180,10 @@ class _DashboardState extends State<Dashboard> {
             ),
             Text(
               'Jacinto, Davao City',
-              style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -178,58 +225,62 @@ class _DashboardState extends State<Dashboard> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            color: const Color.fromARGB(255, 15, 62, 163),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                searchBarWithFilter(),
-              ],
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              color: const Color.fromARGB(255, 15, 62, 163),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  SearchBarWithFilter(
+                    searchController: _searchController,
+                    onSearchChanged: (query) => _onSearchChanged(),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: double.infinity,
-                height: 20,
-                decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 15, 62, 163),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(100),
-                    bottomRight: Radius.circular(100),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 15, 62, 163),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(100),
+                      bottomRight: Radius.circular(100),
+                    ),
                   ),
                 ),
-              ),
-              Positioned(
-                top: 5,
-                left: 0,
-                right: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    categoryButton('Sports', "assets/images/volleyball.png",
-                        const Color.fromARGB(255, 230, 109, 100)),
-                    categoryButton('Music', "assets/images/music.png",
-                        const Color.fromARGB(255, 230, 168, 75)),
-                    categoryButton('Esports', "assets/images/multiplayer.png",
-                        const Color.fromARGB(255, 84, 202, 165)),
-                  ],
+                Positioned(
+                  top: 5,
+                  left: 0,
+                  right: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      categoryButton('Sports', "assets/images/volleyball.png",
+                          const Color.fromARGB(255, 230, 109, 100)),
+                      categoryButton('Music', "assets/images/music.png",
+                          const Color.fromARGB(255, 230, 168, 75)),
+                      categoryButton('Esports', "assets/images/multiplayer.png",
+                          const Color.fromARGB(255, 84, 202, 165)),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          Expanded(
-            child: Column(
+              ],
+            ),
+            const SizedBox(height: 32),
+            Column(
               children: [
                 upcomingEventsHeader(context),
                 FutureBuilder<List<DashboardCard>>(
-                  future: fetchDashboardCards(),
+                  future: _dashboardCardsFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const CircularProgressIndicator();
@@ -238,26 +289,33 @@ class _DashboardState extends State<Dashboard> {
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return const Text('No Dashboard Cards Found');
                     } else {
-                      final cards = snapshot.data!;
+                      final cards =
+                          _filteredCards.isEmpty ? _allCards : _filteredCards;
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        child: Row(children: cards),
+                        child: Row(
+                          children: cards.map((card) {
+                            return ConstrainedBox(
+                              constraints:
+                                  BoxConstraints(maxWidth: screenWidth * .8),
+                              child: card,
+                            );
+                          }).toList(),
+                        ),
                       );
                     }
                   },
                 ),
                 const SizedBox(height: 32),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: inviteCard(),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: inviteCard(),
                 ),
                 const SizedBox(height: 24),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -266,15 +324,16 @@ class _DashboardState extends State<Dashboard> {
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
-            _currentIndex = index; 
+            _currentIndex = index;
           });
           if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const AllEventsPage()),
             );
-          } if (index == 2){
-              Navigator.push(
+          }
+          if (index == 2) {
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const AllEventsPage()),
             );
