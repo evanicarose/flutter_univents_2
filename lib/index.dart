@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_univents_2/dashboard.dart';
@@ -17,26 +18,42 @@ class _IndexScreenState extends State<IndexScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<void> _signInWithGoogle() async {
-    try {
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        scopes: ['email'],
-        forceCodeForRefreshToken: true,
-      );
+Future<void> _signInWithGoogle() async {
+  try {
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: ['email'],
+      forceCodeForRefreshToken: true,
+    );
 
-      await googleSignIn.signOut();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) return;
+    await googleSignIn.signOut();
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+    if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
 
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
 
-      await _auth.signInWithCredential(credential);
+    UserCredential userCredential = await _auth.signInWithCredential(credential);
+
+    // Now store user data in Firestore
+    final user = userCredential.user;
+    if (user != null) {
+      // Prepare the user data to be added to Firestore
+      final userData = {
+        'email': user.email,
+        'firstname': user.displayName?.split(' ').first ?? '',
+        'lastname': user.displayName?.split(' ').last ?? '',
+        'role': 'student', 
+        'status': true,
+        'uid': user.uid,
+      };
+
+      // Add user data to the "accounts" collection in Firestore
+      await FirebaseFirestore.instance.collection('accounts').doc(user.uid).set(userData);
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -46,14 +63,15 @@ class _IndexScreenState extends State<IndexScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Signed in with Google!')),
-      );
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message}')),
+        const SnackBar(content: Text('Signed in with Google and data added!')),
       );
     }
+  } on FirebaseAuthException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: ${e.message}')),
+    );
   }
+}
 
   Future<void> _signInWithFacebook() async {
     ScaffoldMessenger.of(context).showSnackBar(
