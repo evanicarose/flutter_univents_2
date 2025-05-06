@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_univents_2/view-events.dart';
@@ -10,8 +12,9 @@ class DashboardCard extends StatelessWidget {
   final DateTime dateTimeEnd;
   final String location;
   final String description;
-  final DocumentReference orgRef;  // Add orgRef to constructor
+  final DocumentReference orgRef; // Add orgRef to constructor
   final String eventId; // Add eventId to constructor
+  final bool isVisible;
 
   const DashboardCard({
     super.key,
@@ -22,6 +25,7 @@ class DashboardCard extends StatelessWidget {
     required this.dateTimeEnd,
     required this.description,
     required this.orgRef,
+    required this.isVisible,
     required this.eventId, // Accept eventId as a parameter
   });
 
@@ -32,9 +36,11 @@ class DashboardCard extends StatelessWidget {
     final DateTime dateTimeEnd = timestampEnd.toDate();
     final String location = map['location'] ?? "";
     final String title = map['title'];
-    
+    final bool isVisible = map['isVisible'] ?? false; // Parse isVisible field
+
     // Extract orgRef and eventId from the map
-    final DocumentReference orgRef = map['orguid'];  // Assuming 'orguid' is the reference to the organization
+    final DocumentReference orgRef =
+        map['orguid']; // Assuming 'orguid' is the reference to the organization
     final String eventId = map['uid']; // Assuming 'uid' is the eventId
 
     return DashboardCard(
@@ -44,8 +50,9 @@ class DashboardCard extends StatelessWidget {
       dateTimeEnd: dateTimeEnd,
       location: location,
       description: map['description'] ?? '',
-      orgRef: orgRef,  // Pass orgRef here
+      orgRef: orgRef, // Pass orgRef here
       eventId: eventId, // Pass eventId here
+      isVisible: isVisible,
     );
   }
 
@@ -95,7 +102,8 @@ class DashboardCard extends StatelessWidget {
           child: Card(
             elevation: 0,
             color: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Stack(
               children: [
                 Padding(
@@ -125,18 +133,23 @@ class DashboardCard extends StatelessWidget {
                                 elevation: 0,
                                 color: Colors.white,
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 4, horizontal: 12),
                                   child: Column(
                                     children: [
                                       Text(
                                         day,
                                         textAlign: TextAlign.center,
-                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700),
                                       ),
                                       Text(
                                         month,
                                         textAlign: TextAlign.center,
-                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600),
                                       ),
                                     ],
                                   ),
@@ -149,7 +162,8 @@ class DashboardCard extends StatelessWidget {
                       Text(
                         partialTitle,
                         textAlign: TextAlign.start,
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w500),
                       ),
                       Row(
                         children: [
@@ -171,12 +185,14 @@ class DashboardCard extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(5)),
-                      color: Colors.white.withOpacity(0.85), // White background with opacity
+                      color: Colors.white
+                          .withOpacity(0.85), // White background with opacity
                     ),
                     padding: EdgeInsets.all(6),
                     child: Icon(
                       Icons.bookmark, // The red icon you mentioned
-                      color: const Color.fromARGB(255, 238, 105, 96), // Red color for the icon
+                      color: const Color.fromARGB(
+                          255, 238, 105, 96), // Red color for the icon
                       size: 20, // Icon size, adjust as needed
                     ),
                   ),

@@ -32,7 +32,9 @@ class _DashboardState extends State<Dashboard> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredCards = _allCards
-          .where((card) => card.title.toLowerCase().contains(query))
+          .where((card) =>
+              card.isVisible && // Ensure only visible cards are included
+              card.title.toLowerCase().contains(query))
           .toList();
     });
   }
@@ -45,6 +47,7 @@ class _DashboardState extends State<Dashboard> {
           await FirebaseFirestore.instance.collection('events').get();
       final cards = snapshot.docs
           .map((doc) => DashboardCard.fromMap(doc.data()))
+          .where((card) => card.isVisible)
           .toList();
 
       _allCards = cards; // Update directly
